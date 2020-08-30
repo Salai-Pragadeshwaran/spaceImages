@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Nasa Images</string>
+    <string name="openNavDrawer">navigation drawer opened</string>
+    <string name="closeNavDrawer">navigation drawer closed</string>
+</resources>

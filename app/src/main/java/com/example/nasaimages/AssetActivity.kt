@@ -33,10 +33,10 @@ class AssetActivity : AppCompatActivity() {
             override fun onResponse(call: Call<String>, response: Response<String>) {
                 var text = response.body()
                 var url: String = JSONObject(text).getJSONObject("collection").getJSONArray("items")
-                    .getJSONObject(0).getString("href")
+                    .getJSONObject(2).getString("href")
                 Glide.with(baseContext)
                     .load(url)
-                    .placeholder(R.drawable.ic_launcher_background)
+                    .placeholder(R.drawable.ic_launcher_foreground)
                     .into(assetImage)
                 //stopFetching()
             }

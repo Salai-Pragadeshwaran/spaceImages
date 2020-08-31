@@ -1,9 +1,7 @@
 package com.example.nasaimages
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.net.Uri
-import android.opengl.Visibility
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -11,8 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import com.bumptech.glide.Glide
 import com.example.studc.ui.main.MainViewModel
 import kotlinx.android.synthetic.main.main_fragment.*
@@ -79,22 +75,7 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             }
 
             override fun onResponse(call: Call<String>, response: Response<String>) {
-                var text = response.body()
-                var jsonTxt: JSONObject = JSONObject(text)
-                txt.text = jsonTxt.getString("explanation")
-                if (jsonTxt.getString("media_type")=="image") {
-                    video.visibility = View.INVISIBLE
-                    iotd.visibility = View.VISIBLE
-                    Glide.with(imgOfTheDay.context)
-                        .load(jsonTxt.getString("url"))
-                        .into(imgOfTheDay)
-                }else{
-                    video.visibility = View.VISIBLE
-                    iotd.visibility = View.INVISIBLE
-                    var uri = Uri.parse(jsonTxt.getString("url"))
-                    video.setVideoURI(uri)
-                    video.start()
-                }
+                onMediaResponse(response.body())
                 stopFetching()
             }
         })
@@ -114,28 +95,32 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             }
 
             override fun onResponse(call: Call<String>, response: Response<String>) {
-                var text = response.body()
-                var jsonTxt: JSONObject = JSONObject(text)
-                txt.text = jsonTxt.getString("explanation")
-                if(jsonTxt.getString("media_type")=="image") {
-                    video.visibility = View.INVISIBLE
-                    iotd.visibility = View.VISIBLE
-                    Glide.with(imgOfTheDay.context)
-                        .load(jsonTxt.getString("url"))
-                        .into(imgOfTheDay)
-                    stopFetching()
-                }else{
-                    video.visibility = View.VISIBLE
-                    iotd.visibility = View.INVISIBLE
-                    var uri = Uri.parse(jsonTxt.getString("url"))
-                    video.setVideoURI(uri)
-                    video.start()
-                }
+                onMediaResponse(response.body())
+                stopFetching()
             }
         })
 
 
 
+    }
+
+    private fun onMediaResponse(text: String?) {
+        var jsonTxt: JSONObject = JSONObject(text)
+        txt.text = jsonTxt.getString("explanation")
+        if(jsonTxt.getString("media_type")=="image") {
+            video.visibility = View.INVISIBLE
+            iotd.visibility = View.VISIBLE
+            Glide.with(imgOfTheDay.context)
+                .load(jsonTxt.getString("url"))
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .into(imgOfTheDay)
+        }else{
+            video.visibility = View.VISIBLE
+            iotd.visibility = View.INVISIBLE
+            var uri = Uri.parse(jsonTxt.getString("url"))
+            video.setVideoURI(uri)
+            video.start()
+        }
     }
 
     private fun stopFetching() {
@@ -150,9 +135,13 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month)
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-        var sdf = SimpleDateFormat("yyyy-MM-dd")
-        var dateQuery = sdf.format(calendar.timeInMillis)
-        getDateImage(dateQuery)
+        if(calendar.timeInMillis<=Calendar.getInstance().timeInMillis) {
+            var sdf = SimpleDateFormat("yyyy-MM-dd")
+            var dateQuery = sdf.format(calendar.timeInMillis)
+            getDateImage(dateQuery)
+        }else{
+            Toast.makeText(context, "Invalid Response", Toast.LENGTH_SHORT).show()
+        }
     }
 
 }

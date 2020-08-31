@@ -42,7 +42,7 @@ class ImagesAdapter(var images: ArrayList<ImageData>, var mContext: Context) : R
         if (images[position].url!="") {
             Glide.with(mContext)
                 .load(images[position].url)
-                .placeholder(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.ic_launcher_foreground)
                 .into(holder.img)
         }
         holder.container.setOnClickListener {

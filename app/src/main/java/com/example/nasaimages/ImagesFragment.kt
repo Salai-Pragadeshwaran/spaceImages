@@ -92,6 +92,7 @@ class ImagesFragment : Fragment() {
             }
 
             override fun onResponse(call: Call<kotlin.String>, response: Response<kotlin.String>) {
+                //TODO: check is response is successful
                 var text = response.body()
                 //check.text = text
                 imagesData.clear()

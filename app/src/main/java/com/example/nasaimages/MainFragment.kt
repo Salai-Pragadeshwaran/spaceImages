@@ -1,16 +1,25 @@
 package com.example.nasaimages
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.renderscript.ScriptGroup
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
+import com.example.nasaimages.databinding.MainFragmentBinding
 import com.example.studc.ui.main.MainViewModel
+import com.google.android.youtube.player.YouTubeInitializationResult
+import com.google.android.youtube.player.YouTubePlayer
+import com.google.android.youtube.player.YouTubePlayerFragment
 import kotlinx.android.synthetic.main.main_fragment.*
 import org.json.JSONObject
 import retrofit2.Call
@@ -22,28 +31,25 @@ import java.util.*
 
 class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
-    lateinit var txt: TextView
-    lateinit var iotd: ImageView
-    lateinit var video: VideoView
+    //lateinit var binding: MainFragmentBinding
 
     companion object {
         fun newInstance() = MainFragment()
     }
 
     private lateinit var viewModel: MainViewModel
+    var YOUTUBE_VIDEO_ID = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var root = inflater.inflate( R.layout.main_fragment, container, false)
+        var binding: MainFragmentBinding =
+            DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
 
-        txt = root.findViewById(R.id.textViewImg)
-        iotd = root.findViewById(R.id.imgOfTheDay)
-        video = root.findViewById(R.id.videoOfTheDay)
+        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
 
-        var setDate = root.findViewById(R.id.setDate) as Button
-        setDate.setOnClickListener {
+        binding.setDate.setOnClickListener {
             var datePicker = DatePickerFragment()
             datePicker.setTargetFragment(this, 0)
             datePicker.show(this!!.fragmentManager!!, "Date Picker")
@@ -54,74 +60,52 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             //TODO: make better UI use lottie animations
         }
 
-        getImage()
-        return root
+        binding.videoOfTheDay.setOnClickListener {
+            playVideo(YOUTUBE_VIDEO_ID, (binding.root.context))
+        }
+
+        viewModel.jsonTxt.observe(
+            viewLifecycleOwner,
+            androidx.lifecycle.Observer { stringObtained ->
+                var jsonTxt = JSONObject(stringObtained)
+                binding.textViewImg.text = jsonTxt.getString("explanation")
+                if (jsonTxt.getString("media_type") == "image") {
+                    binding.videoOfTheDay.visibility = View.INVISIBLE
+                    binding.imgOfTheDay.visibility = View.VISIBLE
+                    Glide.with(imgOfTheDay.context)
+                        .load(jsonTxt.getString("url"))
+                        .placeholder(R.drawable.ic_moon)
+                        .into(imgOfTheDay)
+                } else {
+                    binding.videoOfTheDay.visibility = View.VISIBLE
+                    binding.imgOfTheDay.visibility = View.INVISIBLE
+                    var url = jsonTxt.getString("url")
+                    YOUTUBE_VIDEO_ID =
+                        url.substring("https://www.youtube.com/embed/".length, url.length - 6)
+                    playVideo(YOUTUBE_VIDEO_ID, (binding.root.context))
+                }
+
+            })
+
+        viewModel.failureText.observe(viewLifecycleOwner, androidx.lifecycle.Observer { msg ->
+            binding.textViewImg.text = msg
+        }
+        )
+
+        return binding.root
+    }
+
+    private fun playVideo(youtubeVideoId: String, mcontext: Context) {
+        var i = Intent(mcontext, YoutubePlayerActivity::class.java)
+        i.putExtra("YOUTUBE_VIDEO_ID", youtubeVideoId)
+        startActivity(i)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         // TODO: Use the ViewModel
     }
 
-    private fun getImage(){
-
-        startFetching()
-
-        NasaApi.retrofitService.getTodaysPic().enqueue( object: Callback<String> {
-            override fun onFailure(call: Call<String>, t: Throwable) {
-                txt.text = "Failure: " + t.message
-                stopFetching()
-            }
-
-            override fun onResponse(call: Call<String>, response: Response<String>) {
-                onMediaResponse(response.body())
-                stopFetching()
-            }
-        })
-
-
-
-    }
-
-    private fun getDateImage(date: String){
-
-        startFetching()
-
-        NasaApi.retrofitService.getDatePic(date).enqueue( object: Callback<String> {
-            override fun onFailure(call: Call<String>, t: Throwable) {
-                txt.text = "Failure: " + t.message
-                stopFetching()
-            }
-
-            override fun onResponse(call: Call<String>, response: Response<String>) {
-                onMediaResponse(response.body())
-                stopFetching()
-            }
-        })
-
-
-
-    }
-
-    private fun onMediaResponse(text: String?) {
-        var jsonTxt: JSONObject = JSONObject(text)
-        txt.text = jsonTxt.getString("explanation")
-        if(jsonTxt.getString("media_type")=="image") {
-            video.visibility = View.INVISIBLE
-            iotd.visibility = View.VISIBLE
-            Glide.with(imgOfTheDay.context)
-                .load(jsonTxt.getString("url"))
-                .placeholder(R.drawable.ic_launcher_foreground)
-                .into(imgOfTheDay)
-        }else{
-            video.visibility = View.VISIBLE
-            iotd.visibility = View.INVISIBLE
-            var uri = Uri.parse(jsonTxt.getString("url"))
-            video.setVideoURI(uri)
-            video.start()
-        }
-    }
 
     private fun stopFetching() {
 
@@ -135,13 +119,14 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month)
         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-        if(calendar.timeInMillis<=Calendar.getInstance().timeInMillis) {
+        if (calendar.timeInMillis <= Calendar.getInstance().timeInMillis) {
             var sdf = SimpleDateFormat("yyyy-MM-dd")
             var dateQuery = sdf.format(calendar.timeInMillis)
-            getDateImage(dateQuery)
-        }else{
+            viewModel.getDateImage(dateQuery)
+        } else {
             Toast.makeText(context, "Invalid Response", Toast.LENGTH_SHORT).show()
         }
     }
+
 
 }

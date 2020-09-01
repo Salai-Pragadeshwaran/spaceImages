@@ -36,7 +36,7 @@ class AssetActivity : AppCompatActivity() {
                     .getJSONObject(2).getString("href")
                 Glide.with(baseContext)
                     .load(url)
-                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .placeholder(R.drawable.ic_moon)
                     .into(assetImage)
                 //stopFetching()
             }

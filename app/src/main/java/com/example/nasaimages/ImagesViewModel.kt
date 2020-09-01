@@ -1,7 +1,9 @@
-package com.example.studc.ui.main
+package com.example.nasaimages
 
 import androidx.lifecycle.ViewModel
 
 class ImagesViewModel : ViewModel() {
-    // TODO: Implement the ViewModel
+   init{
+
+   }
 }

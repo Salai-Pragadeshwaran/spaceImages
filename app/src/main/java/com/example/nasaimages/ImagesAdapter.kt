@@ -14,7 +14,8 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.android.synthetic.main.image_item.view.*
 import java.util.ArrayList
 
-class ImagesAdapter(var images: ArrayList<ImageData>, var mContext: Context) : RecyclerView.Adapter<ImagesAdapter.ViewHolder>() {
+class ImagesAdapter(var images: ArrayList<ImageData>, var mContext: Context) :
+    RecyclerView.Adapter<ImagesAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         internal var title: TextView
@@ -39,7 +40,7 @@ class ImagesAdapter(var images: ArrayList<ImageData>, var mContext: Context) : R
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.title.text = images[position].title
-        if (images[position].url!="") {
+        if (images[position].url != "") {
             Glide.with(mContext)
                 .load(images[position].url)
                 .placeholder(R.drawable.ic_launcher_foreground)

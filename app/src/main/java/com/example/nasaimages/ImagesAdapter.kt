@@ -43,12 +43,14 @@ class ImagesAdapter(var images: ArrayList<ImageData>, var mContext: Context) :
         if (images[position].url != "") {
             Glide.with(mContext)
                 .load(images[position].url)
+                .circleCrop()
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .into(holder.img)
         }
         holder.container.setOnClickListener {
             var i = Intent(mContext, AssetActivity::class.java)
             i.putExtra("NASA_ID", images[position].nasa_id)
+            i.putExtra("MEDIA_TYPE",images[position].media_type )
             mContext.startActivity(i)
         }
     }

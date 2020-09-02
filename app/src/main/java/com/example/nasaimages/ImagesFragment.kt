@@ -1,10 +1,12 @@
 package com.example.nasaimages
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -40,7 +42,11 @@ class ImagesFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(this).get(ImagesViewModel::class.java)
 
-        binding.imageDataRecyclerView.setLayoutManager(GridLayoutManager(binding.root.context, 2))
+        if (getOrientation()==1) {
+            binding.imageDataRecyclerView.setLayoutManager(GridLayoutManager(binding.root.context, 2))
+        }else{
+            binding.imageDataRecyclerView.setLayoutManager(GridLayoutManager(binding.root.context, 4))
+        }
 
         if (!searchThread.isAlive) {
             searchThread.start()
@@ -79,11 +85,12 @@ class ImagesFragment : Fragment() {
     }
 
     private fun getData() {
+        startFetching()
         NasaApi.retrofitServiceImages.searchForKeyword(searchString)
             .enqueue(object : Callback<kotlin.String> {
                 override fun onFailure(call: Call<kotlin.String>, t: Throwable) {
                     //check.text = "Failure: " + t.message
-                    //stopFetching()
+                    stopFetching()
                 }
 
                 override fun onResponse(
@@ -119,13 +126,29 @@ class ImagesFragment : Fragment() {
                         ++i
                     }
                     populateRecycler(imagesData)
-                    //stopFetching()
+                    stopFetching()
                 }
             })
+    }
+
+    private fun startFetching() {
+        binding.loading2.visibility = View.VISIBLE
+    }
+
+    private fun stopFetching() {
+        binding.loading2.visibility = View.GONE
     }
 
     fun populateRecycler(imagesData: ArrayList<ImageData>) {
         var adapter = ImagesAdapter(imagesData, binding.root.context)
         binding.imageDataRecyclerView.adapter = adapter
+    }
+
+    fun getOrientation(): Int {
+        return if (resources.displayMetrics.widthPixels > resources.displayMetrics.heightPixels) {
+            0 // for landscape
+        } else {
+            1 // for portrait
+        }
     }
 }

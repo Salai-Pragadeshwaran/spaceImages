@@ -31,7 +31,7 @@ import java.util.*
 
 class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
-    //lateinit var binding: MainFragmentBinding
+    lateinit var binding: MainFragmentBinding
 
     companion object {
         fun newInstance() = MainFragment()
@@ -44,7 +44,7 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var binding: MainFragmentBinding =
+        binding =
             DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -53,24 +53,37 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             var datePicker = DatePickerFragment()
             datePicker.setTargetFragment(this, 0)
             datePicker.show(this!!.fragmentManager!!, "Date Picker")
-            //TODO: make sure user doesn't select a future date
-            //TODO: load videos
             //TODO: implement pagination
-            //TODO: set splash screen
-            //TODO: make better UI use lottie animations
         }
 
         binding.videoOfTheDay.setOnClickListener {
             playVideo(YOUTUBE_VIDEO_ID, (binding.root.context))
         }
 
+        viewModel.mediaDetails.observe(
+            viewLifecycleOwner,
+            androidx.lifecycle.Observer { content ->
+                binding.textViewImg.text = content
+            }
+        )
+
+        viewModel.isLoading.observe(
+            viewLifecycleOwner,
+            androidx.lifecycle.Observer { isLoading ->
+                if (isLoading) {
+                    binding.loading1.visibility = View.VISIBLE
+                } else {
+                    binding.loading1.visibility = View.GONE
+                }
+            }
+        )
+
         viewModel.jsonTxt.observe(
             viewLifecycleOwner,
             androidx.lifecycle.Observer { stringObtained ->
                 var jsonTxt = JSONObject(stringObtained)
-                binding.textViewImg.text = jsonTxt.getString("explanation")
                 if (jsonTxt.getString("media_type") == "image") {
-                    binding.videoOfTheDay.visibility = View.INVISIBLE
+                    binding.videoOfTheDay.visibility = View.GONE
                     binding.imgOfTheDay.visibility = View.VISIBLE
                     Glide.with(imgOfTheDay.context)
                         .load(jsonTxt.getString("url"))
@@ -78,7 +91,7 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                         .into(imgOfTheDay)
                 } else {
                     binding.videoOfTheDay.visibility = View.VISIBLE
-                    binding.imgOfTheDay.visibility = View.INVISIBLE
+                    binding.imgOfTheDay.visibility = View.GONE
                     var url = jsonTxt.getString("url")
                     YOUTUBE_VIDEO_ID =
                         url.substring("https://www.youtube.com/embed/".length, url.length - 6)
@@ -99,19 +112,6 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         var i = Intent(mcontext, YoutubePlayerActivity::class.java)
         i.putExtra("YOUTUBE_VIDEO_ID", youtubeVideoId)
         startActivity(i)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        // TODO: Use the ViewModel
-    }
-
-
-    private fun stopFetching() {
-
-    }
-
-    private fun startFetching() {
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {

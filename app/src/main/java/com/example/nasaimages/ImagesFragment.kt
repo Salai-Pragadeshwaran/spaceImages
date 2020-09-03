@@ -1,5 +1,7 @@
 package com.example.nasaimages
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -40,6 +42,16 @@ class ImagesFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(this).get(ImagesViewModel::class.java)
 
+        var connMgr = binding.root.context
+            .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        var networkInfo = connMgr.activeNetworkInfo
+
+        if (!(networkInfo != null && networkInfo.isConnected)) {
+            binding.noDataText.text = "No Internet Connection"
+            binding.noDataText.visibility = View.VISIBLE
+        }
+
         if (getOrientation() == 1) {
             binding.imageDataRecyclerView.setLayoutManager(
                 GridLayoutManager(
@@ -73,6 +85,15 @@ class ImagesFragment : Fragment() {
                             object : Runnable {
                                 override fun run() {
                                     searchString = binding.search.text.toString()
+                                    var connMgr = binding.root.context
+                                        .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+                                    var networkInfo = connMgr.activeNetworkInfo
+
+                                    if (!(networkInfo != null && networkInfo.isConnected)) {
+                                        binding.noDataText.text = "No Internet Connection"
+                                        binding.noDataText.visibility = View.VISIBLE
+                                    }
                                     if (searchString != "") {
                                         getData()
                                     } else {
@@ -106,12 +127,24 @@ class ImagesFragment : Fragment() {
                     response: Response<kotlin.String>
                 ) {
                     //TODO: check is response is successful
+                    if (!response.isSuccessful) {
+                        binding.noDataText.text = "Code: ${response.code()}"
+                        binding.noDataText.visibility = View.VISIBLE
+                        return
+                    }
+                    binding.noDataText.text = "No data Available"
                     var text = response.body()
-                    //check.text = text
                     imagesData.clear()
 
                     var jsonTxt: JSONArray =
                         JSONObject(text).getJSONObject("collection").getJSONArray("items")
+
+                    if (jsonTxt.length() == 0) {
+                        binding.noDataText.visibility = View.VISIBLE
+                    } else {
+                        binding.noDataText.visibility = View.GONE
+                    }
+
                     var i: Int = 0
                     while (i < jsonTxt.length()) {
                         var imgData = ImageData()

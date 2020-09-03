@@ -3,6 +3,7 @@ package com.example.nasaimages
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.net.Uri
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -41,6 +42,15 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+
+        var connMgr = binding.root.context
+            .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        var networkInfo = connMgr.activeNetworkInfo
+
+        if (!(networkInfo != null && networkInfo.isConnected)) {
+            binding.textView2.text = "No Internet Connection"
+        }
 
         binding.setDate.setOnClickListener {
             var datePicker = DatePickerFragment()
@@ -88,7 +98,10 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                         .placeholder(R.drawable.ic_moon)
                         .into(imgOfTheDay)
                 } else if (jsonTxt.getString("url")
-                        .substring(0, "https://www.youtube.com/embed/".length) == "https://www.youtube.com/embed/"
+                        .substring(
+                            0,
+                            "https://www.youtube.com/embed/".length
+                        ) == "https://www.youtube.com/embed/"
                 ) {
                     binding.textView2.text = "VIDEO OF THE DAY"
                     binding.videoOfTheDay.visibility = View.VISIBLE

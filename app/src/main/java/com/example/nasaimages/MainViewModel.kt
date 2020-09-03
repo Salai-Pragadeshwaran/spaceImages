@@ -1,8 +1,7 @@
-package com.example.studc.ui.main
+package com.example.nasaimages
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.nasaimages.NasaApi
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -17,7 +16,6 @@ class MainViewModel : ViewModel() {
 
     init {
         getImage()
-        //jsonTxt.value = JSONObject("")
         failureText.value = ""
         mediaDetails.value = "Image of the day"
         isLoading.value = true

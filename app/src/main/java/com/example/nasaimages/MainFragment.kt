@@ -6,25 +6,16 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.renderscript.ScriptGroup
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import com.bumptech.glide.Glide
 import com.example.nasaimages.databinding.MainFragmentBinding
-import com.example.studc.ui.main.MainViewModel
-import com.google.android.youtube.player.YouTubeInitializationResult
-import com.google.android.youtube.player.YouTubePlayer
-import com.google.android.youtube.player.YouTubePlayerFragment
 import kotlinx.android.synthetic.main.main_fragment.*
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -39,6 +30,8 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     private lateinit var viewModel: MainViewModel
     var YOUTUBE_VIDEO_ID = ""
+    var isYoutubeVideo = false
+    var videoUrl = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +50,11 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         }
 
         binding.videoOfTheDay.setOnClickListener {
-            playVideo(YOUTUBE_VIDEO_ID, (binding.root.context))
+            if (isYoutubeVideo) {
+                playVideo(YOUTUBE_VIDEO_ID, (binding.root.context))
+            } else {
+                sendMediaIntent()
+            }
         }
 
         viewModel.mediaDetails.observe(
@@ -83,19 +80,28 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             androidx.lifecycle.Observer { stringObtained ->
                 var jsonTxt = JSONObject(stringObtained)
                 if (jsonTxt.getString("media_type") == "image") {
+                    binding.textView2.text = "IMAGE OF THE DAY"
                     binding.videoOfTheDay.visibility = View.GONE
                     binding.imgOfTheDay.visibility = View.VISIBLE
                     Glide.with(imgOfTheDay.context)
                         .load(jsonTxt.getString("url"))
                         .placeholder(R.drawable.ic_moon)
                         .into(imgOfTheDay)
-                } else {
+                } else if (jsonTxt.getString("url")
+                        .substring(0, "https://www.youtube.com/embed/".length) == "https://www.youtube.com/embed/"
+                ) {
+                    binding.textView2.text = "VIDEO OF THE DAY"
                     binding.videoOfTheDay.visibility = View.VISIBLE
                     binding.imgOfTheDay.visibility = View.GONE
                     var url = jsonTxt.getString("url")
                     YOUTUBE_VIDEO_ID =
                         url.substring("https://www.youtube.com/embed/".length, url.length - 6)
                     playVideo(YOUTUBE_VIDEO_ID, (binding.root.context))
+                    isYoutubeVideo = true
+                } else {
+                    isYoutubeVideo = false
+                    videoUrl = jsonTxt.getString("url")
+                    sendMediaIntent()
                 }
 
             })
@@ -106,6 +112,12 @@ class MainFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         )
 
         return binding.root
+    }
+
+    private fun sendMediaIntent() {
+        val i = Intent(Intent.ACTION_VIEW)
+        i.data = Uri.parse(videoUrl)
+        startActivity(i)
     }
 
     private fun playVideo(youtubeVideoId: String, mcontext: Context) {

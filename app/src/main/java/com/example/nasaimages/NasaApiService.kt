@@ -22,7 +22,7 @@ private val retrofitImages = Retrofit.Builder()
     .baseUrl(BASE_URL_IMAGES)
     .build()
 
-interface NasaApiService{
+interface NasaApiService {
     @GET("planetary/apod?api_key=$API_KEY")
     fun getTodaysPic(): Call<String>
 
@@ -37,7 +37,7 @@ interface NasaApiService{
 }
 
 
-object NasaApi{
+object NasaApi {
     val retrofitService: NasaApiService by lazy {
         retrofit.create(NasaApiService::class.java)
     }

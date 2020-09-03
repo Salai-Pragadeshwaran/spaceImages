@@ -1,12 +1,10 @@
 package com.example.nasaimages
 
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -42,10 +40,20 @@ class ImagesFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(this).get(ImagesViewModel::class.java)
 
-        if (getOrientation()==1) {
-            binding.imageDataRecyclerView.setLayoutManager(GridLayoutManager(binding.root.context, 2))
-        }else{
-            binding.imageDataRecyclerView.setLayoutManager(GridLayoutManager(binding.root.context, 4))
+        if (getOrientation() == 1) {
+            binding.imageDataRecyclerView.setLayoutManager(
+                GridLayoutManager(
+                    binding.root.context,
+                    2
+                )
+            )
+        } else {
+            binding.imageDataRecyclerView.setLayoutManager(
+                GridLayoutManager(
+                    binding.root.context,
+                    4
+                )
+            )
         }
 
         if (!searchThread.isAlive) {

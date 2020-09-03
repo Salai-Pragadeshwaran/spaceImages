@@ -14,6 +14,12 @@ class DatePickerFragment : DialogFragment() {
         var month = c.get(Calendar.MONTH)
         var dayOfMonth = c.get(Calendar.DAY_OF_MONTH)
 
-        return DatePickerDialog(activity!!,  targetFragment!! as DatePickerDialog.OnDateSetListener ,year, month, dayOfMonth)
+        return DatePickerDialog(
+            activity!!,
+            targetFragment!! as DatePickerDialog.OnDateSetListener,
+            year,
+            month,
+            dayOfMonth
+        )
     }
 }

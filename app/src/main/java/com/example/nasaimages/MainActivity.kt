@@ -1,6 +1,5 @@
 package com.example.nasaimages
 
-import android.app.DatePickerDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
@@ -13,7 +12,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var toggle: ActionBarDrawerToggle
 
-    companion object{
+    companion object {
         @JvmStatic
         lateinit var sfm: FragmentManager
     }
@@ -32,13 +31,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         // navigation
-        toggle = ActionBarDrawerToggle(this, drawerLayout,
-            R.string.openNavDrawer, R.string.closeNavDrawer)
+        toggle = ActionBarDrawerToggle(
+            this, drawerLayout,
+            R.string.openNavDrawer, R.string.closeNavDrawer
+        )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navView.setNavigationItemSelectedListener {
-            when(it.itemId){
+            when (it.itemId) {
                 R.id.iotd_navMenu -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.container, MainFragment.newInstance())
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(toggle.onOptionsItemSelected(item)){
+        if (toggle.onOptionsItemSelected(item)) {
             return true
         }
         return super.onOptionsItemSelected(item)

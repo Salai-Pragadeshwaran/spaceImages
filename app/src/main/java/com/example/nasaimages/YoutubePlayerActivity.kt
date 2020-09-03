@@ -1,6 +1,5 @@
 package com.example.nasaimages
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Toast
@@ -12,23 +11,27 @@ import com.google.android.youtube.player.YouTubePlayerView
 
 class YoutubePlayerActivity : YouTubeBaseActivity(), YouTubePlayer.OnInitializedListener {
 
-    val YT_API_KEY  = "AIzaSyBX3636NhOqjtWoJOieka6rIic-DPZQqFg"
+    val YT_API_KEY = "AIzaSyBX3636NhOqjtWoJOieka6rIic-DPZQqFg"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val layout = layoutInflater.inflate(R.layout.activity_youtube_player, null) as ConstraintLayout
+        val layout =
+            layoutInflater.inflate(R.layout.activity_youtube_player, null) as ConstraintLayout
         setContentView(layout)
 
         val playerView = YouTubePlayerView(this)
         playerView.layoutParams = ConstraintLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        )
         layout.addView(playerView)
 
         playerView.initialize(YT_API_KEY, this)
     }
 
-    override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, youTubePlayer: YouTubePlayer?,
-                                         wasRestored: Boolean) {
+    override fun onInitializationSuccess(
+        provider: YouTubePlayer.Provider?, youTubePlayer: YouTubePlayer?,
+        wasRestored: Boolean
+    ) {
 
         if (!wasRestored) {
             youTubePlayer?.loadVideo(intent.getStringExtra("YOUTUBE_VIDEO_ID"))

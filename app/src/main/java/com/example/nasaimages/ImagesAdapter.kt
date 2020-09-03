@@ -50,7 +50,7 @@ class ImagesAdapter(var images: ArrayList<ImageData>, var mContext: Context) :
         holder.container.setOnClickListener {
             var i = Intent(mContext, AssetActivity::class.java)
             i.putExtra("NASA_ID", images[position].nasa_id)
-            i.putExtra("MEDIA_TYPE",images[position].media_type )
+            i.putExtra("MEDIA_TYPE", images[position].media_type)
             mContext.startActivity(i)
         }
     }
